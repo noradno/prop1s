@@ -14,7 +14,7 @@ library(janitor)
 library(noradstats)
 
 # Load data
-df_statsys_ten <- read_aiddata("2022_07_06 Aktiv 2012-2021.csv")
+df_statsys_ten <- read_aiddata("statsys_ten.csv")
 
 # Clean column names
 df_statsys_ten <- clean_names(df_statsys_ten)
