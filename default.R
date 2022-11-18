@@ -26,3 +26,36 @@ df_oda_ten <- df_statsys_ten |>
 
 # View data structure
 glimpse(df_oda_ten)
+
+# Function
+f_region <- function(select_region = NULL, select_year = NULL){
+  
+  # Find top ten countries
+  v_topten <- df_oda_ten |> 
+    filter(main_region == select_region,
+           year == select_year,
+           income_category != "Unspecified") |> 
+    group_by(recipient_country_no) |> 
+    summarise(nok_tusen = sum(disbursed_1000_nok)) |> 
+    slice_max(nok_tusen, n = 10) |> 
+    pull(recipient_country_no)
+  
+  # Make table
+  df_region <- df_oda_ten |> 
+    filter(main_region == select_region,
+           year == select_year,
+           chapter_code_name != "N/A") |> 
+    mutate(topten = if_else(
+      recipient_country_no %in% v_topten, recipient_country_no, "Andre land/uspesifisert")
+    ) |> 
+    group_by(chapter_code_name, post_code_name, topten) |> 
+    summarise(nok_tusen = sum(disbursed_1000_nok)) |> 
+    ungroup() |> 
+    mutate(topten = fct_relevel(topten, c(v_topten, "Andre land/uspesifisert"))) |> 
+    arrange(topten) |> 
+    pivot_wider(names_from = topten, values_from = nok_tusen) |> 
+    adorn_totals("both")
+}
+
+df_africa <- f_region(select_region = "Africa", select_year = 2021)
+df_asia <- f_region(select_region = "Asia", select_year = 2021)
